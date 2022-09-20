@@ -115,10 +115,10 @@ def extract_answers(request):
 def submit(request, course_id):
     user = request.user
     course = get_object_or_404(Course, pk=course_id)
-    Enrollment.objects.get(user=user, course=course)
-    Submission.objects.create(enrollment= enroll_id)
+    x = Enrollment.objects.get(user=user, course=course)
+    submission = Submission.objects.create(enrollment_id = x.id )
     choices = extract_answers(request)
-     for choice in choices:
+    for choice in choices:
         x = Choice.objects.filter(id = int(choice)).get()
         submission.choices.add(x)
     submission.save()         
