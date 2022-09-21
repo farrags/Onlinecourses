@@ -115,14 +115,14 @@ def extract_answers(request):
 def submit(request, course_id):
     user = request.user
     course = get_object_or_404(Course, pk=course_id)
-    x = Enrollment.objects.get(user=user, course=course)
-    submission = Submission.objects.create(enrollment_id = x.id )
+    enroll = Enrollment.objects.filter(user=user, course=course).get()
     choices = extract_answers(request)
+    submission = Submission.objects.create(enrollment_id = enroll.id )
     for choice in choices:
         x = Choice.objects.filter(id = int(choice)).get()
         submission.choices.add(x)
     submission.save()         
-    return HttpResponseRedirect(reverse(viewname='onlinecourse:show_exam_result', args=(course.id,submission.id )))
+    return HttpResponseRedirect(reverse(viewname='onlinecourse:show_exam_result', args=(course.id,submission.id ))) 
 
 def show_exam_result(request, course_id, submission_id):
     context = {}
@@ -130,7 +130,7 @@ def show_exam_result(request, course_id, submission_id):
     submit = Submission.objects.get(id = submission_id)
     selected = Submission.objects.filter(id = submission_id).values_list('choices',flat = True)
     score = 0
-    for i in submit.choices.all().filter(is_correct=True).values_list('question_id'):
+    for i in submit.choices.all().filter(result=True).values_list('question_id'):
         score += Question.objects.filter(id=i[0]).first().grade    
     context['selected'] = selected
     context['grade'] = score
